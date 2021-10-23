@@ -1,0 +1,23 @@
+diff -upr a/daemon/unbound.c b/daemon/unbound.c
+--- a/daemon/unbound.c	2021-10-23 21:50:59.964525838 +0100
++++ b/daemon/unbound.c	2021-10-23 21:54:18.381501883 +0100
+@@ -465,6 +465,11 @@ detach(void)
+ #endif /* HAVE_DAEMON */
+ }
+ 
++static void log_ssl_key(const SSL *ssl, const char *line)
++{
++	log_info("connect_ssl_key:\n%s", line);
++}
++
+ /** daemonize, drop user privileges and chroot if needed */
+ static void
+ perform_setup(struct daemon* daemon, struct config_file* cfg, int debug_mode,
+@@ -516,6 +521,7 @@ perform_setup(struct daemon* daemon, str
+ 	if(!(daemon->connect_sslctx = connect_sslctx_create(NULL, NULL,
+ 		cfg->tls_cert_bundle, cfg->tls_win_cert)))
+ 		fatal_exit("could not set up connect SSL_CTX");
++	SSL_CTX_set_keylog_callback(daemon->connect_sslctx, log_ssl_key);
+ #endif
+ 
+ 	/* init syslog (as root) if needed, before daemonize, otherwise
